@@ -1,60 +1,63 @@
-const winston = require('winston');
-const { appConfig } = require('../config');
+const winston = require("winston");
+const { appConfig } = require("../config");
 
-// úË Winston logger
+// Winston logger
+// å»ºç«‹ transports é™£åˆ—
+const transports = [
+  new winston.transports.Console({
+    format: winston.format.combine(
+      winston.format.colorize(),
+      winston.format.simple()
+    ),
+  }),
+];
+
+// åªæœ‰åœ¨è¨­å®š LOG_FILE æ™‚æ‰åŠ å…¥ File transport
+if (appConfig.logging.file) {
+  transports.push(
+    new winston.transports.File({
+      filename: appConfig.logging.file,
+      maxsize: 5242880, // 5MB
+      maxFiles: 5,
+    })
+  );
+}
+
 const logger = winston.createLogger({
-  level: appConfig.logging.level,
+  level: appConfig.logging.level || 'info',
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.errors({ stack: true }),
     winston.format.json()
   ),
-  defaultMeta: { service: 'iwantknowweather-api' },
-  transports: [
-    new winston.transports.File({ 
-      filename: appConfig.logging.file,
-      maxsize: 5242880, // 5MB
-      maxFiles: 5
-    }),
-    new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.simple()
-      )
-    })
-  ]
+  defaultMeta: { service: "iwantknowweather-api" },
+  transports,
 });
 
-// Express -“öýx
 const loggerMiddleware = (req, res, next) => {
   const start = Date.now();
-  
-  // ËBÇ
 
-  logger.info('Request received', {
+  logger.info("Request received", {
     method: req.method,
     url: req.originalUrl,
     ip: req.ip,
-    userAgent: req.get('User-Agent'),
-    timestamp: new Date().toISOString()
+    userAgent: req.get("User-Agent"),
+    timestamp: new Date().toISOString(),
   });
 
-  // *ÿÉP_
   const originalSend = res.send;
-  res.send = function(data) {
+  res.send = function (data) {
     const duration = Date.now() - start;
-    
-    // ÿÉÇ
 
-    logger.info('Request completed', {
+    logger.info("Request completed", {
       method: req.method,
       url: req.originalUrl,
       statusCode: res.statusCode,
       duration,
       ip: req.ip,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-    
+
     return originalSend.call(this, data);
   };
 

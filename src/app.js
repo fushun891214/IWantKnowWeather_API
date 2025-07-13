@@ -21,24 +21,18 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan("combined"));
 app.use(logger);
 
-// 健康檢查端點
-app.get("/health", (req, res) => {
-  res.json({
-    status: "OK",
-    timestamp: new Date().toISOString(),
-    environment: appConfig.env,
-    uptime: process.uptime(),
-  });
-});
-
 // API 路由
 app.get("/", (req, res) => {
   res.json({
     message: "IWantKnowWeather API Server",
     version: "1.0.0",
-    documentation: "/api/docs",
+    status: "running"
   });
 });
+
+// CWA API 路由
+const CWARoutes = require("./routes/CWARoutes");
+app.use("/api/CWA", CWARoutes);
 
 // 404 處理
 app.use("*", (req, res) => {

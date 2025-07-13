@@ -4,7 +4,11 @@
       "Bash(touch:*)",
       "Bash(tree:*)",
       "Bash(find:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(mv:*)",
+      "Bash(rm:*)",
+      "Bash(npm run lint)",
+      "Bash(node:*)"
     ],
     "deny": []
   }
