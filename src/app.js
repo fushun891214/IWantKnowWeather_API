@@ -31,7 +31,7 @@ app.get("/", (req, res) => {
 });
 
 // CWA API 路由
-const cwaRoutes = require("./routes/cwaRoutes");
+const cwaRoutes = require("./routes/CWARoutes");
 app.use("/api/cwa", cwaRoutes);
 
 // 404 處理

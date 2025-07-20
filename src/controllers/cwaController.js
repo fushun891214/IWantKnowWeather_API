@@ -1,5 +1,5 @@
 // CWA API 控制器
-const cwaApiService = require("../services/cwaApiService");
+const CWAApiService = require("../services/CWAApiService");
 
 /**
  * CWA API 控制器
@@ -7,7 +7,7 @@ const cwaApiService = require("../services/cwaApiService");
  */
 class cwaController {
   constructor() {
-    this.cwaService = new cwaApiService();
+    this.cwaService = new CWAApiService();
   }
 
   /**

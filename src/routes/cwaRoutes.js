@@ -1,6 +1,6 @@
 // CWA API 路由
 const express = require("express");
-const CWAController = require("../controllers/cwaController");
+const CWAController = require("../controllers/CWAController");
 
 const router = express.Router();
 const cwaController = new CWAController();
@@ -26,7 +26,7 @@ router.get(
  *   - sortBy: 排序欄位 (預設: createdAt)
  *   - sortOrder: 排序順序 asc/desc (預設: desc)
  */
-router.get("/forecast/data", cwaController.getForecastData.bind(cwaController));
+// router.get("/forecast/data", cwaController.getForecastData.bind(cwaController));
 
 /**
  * 查詢資料庫中的 CWA 資料
@@ -39,13 +39,13 @@ router.get("/forecast/data", cwaController.getForecastData.bind(cwaController));
  *   - sortBy: 排序欄位 (預設: createdAt)
  *   - sortOrder: 排序順序 asc/desc (預設: desc)
  */
-router.get("/data", cwaController.getCWAData.bind(cwaController));
+// router.get("/data", cwaController.getCWAData.bind(cwaController));
 
 /**
  * 根據 ID 獲取特定 CWA 資料
  * GET /api/CWA/data/:id
  */
-router.get("/data/:id", cwaController.getCWAById.bind(cwaController));
+// router.get("/data/:id", cwaController.getCWAById.bind(cwaController));
 
 /**
  * 獲取 CWA 資料統計
@@ -58,19 +58,19 @@ router.get("/stats", cwaController.getCWAStats.bind(cwaController));
  * POST /api/CWA/refresh
  * Body: { locationName?: string, forceUpdate?: boolean }
  */
-router.post("/refresh", cwaController.refreshCWAData.bind(cwaController));
+// router.post("/refresh", cwaController.refreshCWAData.bind(cwaController));
 
 /**
  * 刪除 CWA 資料
  * DELETE /api/CWA/data/:id
  */
-router.delete("/data/:id", cwaController.deleteCWAData.bind(cwaController));
+// router.delete("/data/:id", cwaController.deleteCWAData.bind(cwaController));
 
 /**
  * 健康檢查端點
  * GET /api/CWA/health
  */
-router.get("/health", cwaController.healthCheck.bind(cwaController));
+// router.get("/health", cwaController.healthCheck.bind(cwaController));
 
 module.exports = router;
 
