@@ -1,5 +1,5 @@
 // 各地區未來3天天氣預報
-const CITY_TO_CWA_CODE = {
+export const CITY_TO_CWA_CODE = {
   宜蘭縣: "F-D0047-001",
   桃園市: "F-D0047-005",
   新竹縣: "F-D0047-009",
@@ -23,8 +23,4 @@ const CITY_TO_CWA_CODE = {
   連江縣: "F-D0047-081",
   金門縣: "F-D0047-085",
   臺灣: "F-D0047-089",
-};
-
-module.exports = {
-  CITY_TO_CWA_CODE,
 };

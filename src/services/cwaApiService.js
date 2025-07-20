@@ -1,7 +1,7 @@
 // CWA (中央氣象局) API 服務
-const axios = require("axios");
-const { cwaApiConfig } = require("../config/CWAApi");
-const forecast = require("../models/mongoDB/forecastModel");
+import axios from "axios";
+import { cwaApiConfig } from "../config/CWAApi.js";
+import forecast from "../models/mongoDB/forecastModel.js";
 
 /**
  * CWA API 服務類別
@@ -60,13 +60,13 @@ class CWAApiService {
   }
   /**
    * 取得特定地區的天氣預報資料
-   * @param {string} Dataid - 地區ID
+   * @param {string} cityName - 地區名稱 (如: "臺北市")
    */
-  async getWeatherForecast(Dataid) {
+  async getWeatherForecast(locationCode) {
     try {
       // 向 CWA API 發送請求
       const response = await this.httpClient.get(
-        `/v1/rest/datastore/F-D0047-093?locationId=${Dataid}`
+        `/v1/rest/datastore/${locationCode}`
       );
 
       // 從 response.data 取出實際的 CWA 資料
@@ -103,7 +103,7 @@ class CWAApiService {
       // 寫入資料庫
       const savedRecord = await forecast.create(forecastData);
       console.log(
-        `✅ 成功儲存 Dataid: ${Dataid} 的天氣預報到資料庫，ID: ${savedRecord._id}`
+        `✅ 成功儲存 Dataid: ${forecastData.Dataid} 的天氣預報到資料庫，ID: ${savedRecord._id}`
       );
 
       return response.data;
@@ -115,7 +115,7 @@ class CWAApiService {
 
   /**
    * 批量獲取多個地區的天氣資料
-   * @param {Array<string>} locations - 地區陣列
+   * @param {Array<string>} locations - 地區名稱陣列 (如: ["臺北市", "新北市"])
    */
   async fetchMultipleLocations(locations) {
     try {
@@ -214,7 +214,7 @@ class CWAApiService {
    */
   async getWeatherStats() {
     try {
-      const stats = await TaiwanWeatherForecasts.aggregate([
+      const stats = await forecast.aggregate([
         {
           $match: { isActive: true },
         },
@@ -231,7 +231,7 @@ class CWAApiService {
         },
       ]);
 
-      const totalRecords = await TaiwanWeatherForecasts.countDocuments({
+      const totalRecords = await forecast.countDocuments({
         isActive: true,
       });
 
@@ -427,4 +427,4 @@ class CWAApiService {
   }
 }
 
-module.exports = CWAApiService;
+export default CWAApiService;

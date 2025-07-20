@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const ElementValue = new mongoose.Schema(
   {
@@ -66,4 +66,6 @@ const forecastsSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("forecasts", forecastsSchema);
+const Forecast = mongoose.model("forecasts", forecastsSchema);
+
+export default Forecast;

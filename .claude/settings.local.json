@@ -8,7 +8,12 @@
       "Bash(mv:*)",
       "Bash(rm:*)",
       "Bash(npm run lint)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(npm start)",
+      "Bash(timeout 5s npm start)",
+      "Bash(curl:*)",
+      "Bash(cat:*)",
+      "Bash(npm run dev:*)"
     ],
     "deny": []
   }

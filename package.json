@@ -2,6 +2,7 @@
   "name": "iwantknowweather-api",
   "version": "1.0.0",
   "description": "Weather API Server with Express and MongoDB",
+  "type": "module",
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",

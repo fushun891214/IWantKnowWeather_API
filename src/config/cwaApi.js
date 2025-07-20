@@ -1,4 +1,6 @@
-require("dotenv").config();
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const cwaApiConfig = {
   baseURL: process.env.CWA_API_URL,
@@ -21,7 +23,4 @@ const validateCWAConfig = () => {
   return missingKeys.length === 0;
 };
 
-module.exports = {
-  cwaApiConfig,
-  validateCWAConfig,
-};
+export { cwaApiConfig, validateCWAConfig };

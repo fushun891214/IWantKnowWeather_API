@@ -1,20 +1,17 @@
 // CWA API 路由
-const express = require("express");
-const CWAController = require("../controllers/CWAController");
+import express from "express";
+import CWAController from "../controllers/CWAController.js";
 
 const router = express.Router();
 const cwaController = new CWAController();
 
 /**
  * 從 CWA API 獲取預報資料並寫入 forecast 集合
- * GET /api/cwa/batch/forecast?locationId=F-D0047-071
+ * GET /api/cwa/forecast?location={regition}
  * Query params:
- *   - locationId: 地區id (必填)
+ *   - regition: 地區 (必填)
  */
-router.get(
-  "/batch/forecast",
-  cwaController.getBatchForecast.bind(cwaController)
-);
+router.get("/forecast", cwaController.getBatchForecast.bind(cwaController));
 
 /**
  * 查詢 forecast 集合中的預報資料
@@ -51,7 +48,7 @@ router.get(
  * 獲取 CWA 資料統計
  * GET /api/CWA/stats
  */
-router.get("/stats", cwaController.getCWAStats.bind(cwaController));
+// router.get("/stats", cwaController.getCWAStats.bind(cwaController));
 
 /**
  * 刷新 CWA 資料 (重新從 CWA 獲取)
@@ -72,7 +69,7 @@ router.get("/stats", cwaController.getCWAStats.bind(cwaController));
  */
 // router.get("/health", cwaController.healthCheck.bind(cwaController));
 
-module.exports = router;
+export default router;
 
 /**
  * API 使用範例:

@@ -1,4 +1,6 @@
-require('dotenv').config();
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 // 簡化的認證配置
 const authConfig = {
@@ -21,7 +23,4 @@ const validateAuthConfig = () => {
   return warnings;
 };
 
-module.exports = {
-  authConfig,
-  validateAuthConfig
-};
+export { authConfig, validateAuthConfig };

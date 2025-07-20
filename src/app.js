@@ -1,11 +1,13 @@
-const express = require("express");
-const helmet = require("helmet");
-const cors = require("cors");
-const morgan = require("morgan");
-require("dotenv").config();
+import express from "express";
+import helmet from "helmet";
+import cors from "cors";
+import morgan from "morgan";
+import dotenv from "dotenv";
 
-const { appConfig, connectDB, validateAllConfig } = require("./config");
-// const logger = require("./middlewares/logger");
+dotenv.config();
+
+import { appConfig, connectDB, validateAllConfig, disconnectDB } from "./config/index.js";
+// import logger from "./middlewares/logger.js";
 
 const app = express();
 
@@ -31,7 +33,7 @@ app.get("/", (req, res) => {
 });
 
 // CWA API 路由
-const cwaRoutes = require("./routes/CWARoutes");
+import cwaRoutes from "./routes/CWARoutes.js";
 app.use("/api/cwa", cwaRoutes);
 
 // 404 處理
@@ -74,7 +76,6 @@ const startServer = async () => {
         console.log("HTTP server closed.");
 
         try {
-          const { disconnectDB } = require("./config");
           await disconnectDB();
           console.log("Database disconnected.");
           process.exit(0);
@@ -94,8 +95,11 @@ const startServer = async () => {
 };
 
 // 啟動伺服器
-if (require.main === module) {
+// 檢查是否為主模組 (ES Modules 版本)
+const isMainModule = import.meta.url === new URL(process.argv[1], 'file://').href;
+
+if (isMainModule) {
   startServer();
 }
 
-module.exports = app;
+export default app;

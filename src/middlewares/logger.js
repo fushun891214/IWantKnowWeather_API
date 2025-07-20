@@ -1,5 +1,5 @@
-const winston = require("winston");
-const { appConfig } = require("../config");
+import winston from "winston";
+import { appConfig } from "../config/index.js";
 
 // Winston logger
 // 建立 transports 陣列
@@ -64,4 +64,4 @@ const loggerMiddleware = (req, res, next) => {
   next();
 };
 
-module.exports = loggerMiddleware;
+export default loggerMiddleware;

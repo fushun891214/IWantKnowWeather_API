@@ -24,4 +24,4 @@ const simpleAuth = (req, res, next) => {
   next();
 };
 
-module.exports = { simpleAuth };
+export { simpleAuth };
