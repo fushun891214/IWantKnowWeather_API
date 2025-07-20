@@ -5,7 +5,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-IWantKnowWeather API 是一個基於 Express.js 和 MongoDB 的台灣天氣 API 代理服務，專門提供中央氣象局 (CWA) 天氣預報資料。本服務作為客戶端與 CWA API 之間的安全閘道，實現 API Key 驗證、動態速率限制、資料快取和請求記錄等功能。
+IWantKnowWeather API 是一個基於 Express.js 和 MongoDB 的台灣天氣 API 代理服務，專門提供中央氣象局 (CWA) 天氣預報資料。本服務作為客戶端與 CWA API 之間的安全閘道，實現 API Key 驗證、資料快取和請求記錄等功能。
+
+**技術特色：**
+- 使用 ES Modules (而非 CommonJS)
+- 分層架構設計 (Route → Controller → Service)
+- 地名自動轉換 (英文地名 → CWA 代碼)
+- MongoDB 資料持久化
 
 ## Development Commands
 
@@ -21,192 +27,195 @@ npm run lint:fix    # Auto-fix ESLint issues
 cp .env.example .env # Copy environment template
 
 # Health check
-curl http://localhost:3000/api/CWA/health
+curl http://localhost:3000/
 
-# API Key Management
-node src/utils/createTestApiKey.js     # Create test API keys
-node src/utils/testMiddleware.js       # Test middleware functionality
+# Test API
+curl http://localhost:3000/api/cwa/forecast?location=taipeiCity \
+  -H "X-API-Key: default_client_key"
 ```
 
 ## Current Architecture
 
+### ES Modules 架構
+
+專案已完全轉換為 ES Modules，所有檔案使用：
+- `import` 而非 `require()`
+- `export default` 或 `export {}` 而非 `module.exports`
+- 檔案路徑必須包含 `.js` 副檔名
+
 ### 分層架構模式
 
-專案採用嚴格的分層架構，職責清楚分離：
+```
+Client Request → Route → Controller → Service → CWA API
+              ↓        ↓           ↓         ↓
+              ↓        ↓           ↓         Database
+              ↓        ↓           ↓         ↓
+Client Response ← Route ← Controller ← Service ← Response
+```
 
-- **config/** - 集中式配置管理和驗證
-- **routes/** - HTTP 路由定義和中介軟體綁定  
-- **middlewares/** - 請求攔截器（驗證、日誌、速率限制）
-- **controllers/** - HTTP 請求/回應處理和資料轉換
-- **services/** - 核心業務邏輯和第三方 API 整合
-- **models/** - MongoDB 結構定義和資料庫操作
-- **utils/** - 可重用的工具函數
+**專案結構：**
+- **src/config/** - 集中式配置管理和驗證
+- **src/routes/** - HTTP 路由定義和中介軟體綁定  
+- **src/middlewares/** - 請求攔截器（簡化版認證、日誌）
+- **src/controllers/** - HTTP 請求/回應處理和資料轉換
+- **src/services/** - 核心業務邏輯和第三方 API 整合
+- **src/models/** - MongoDB 結構定義和資料庫操作
+- **src/util/** - 可重用的工具函數和地名對照表
 
 ### 核心架構組件
 
 **路由系統 (`src/routes/CWARoutes.js`)**
-
-- 主要端點：`/api/CWA/*`
-- 所有路由都需要 API Key 驗證和速率限制
-- 支援天氣預報獲取、資料查詢、批量處理、統計等功能
+- 主要端點：`/api/cwa/*`
+- 目前活躍路由：`/api/cwa/forecast`
+- 使用 `.bind()` 確保 Controller 方法的 `this` 上下文
 
 **控制器層 (`src/controllers/CWAController.js`)**
+- `getForecast()` - 主要的天氣預報獲取端點
+- 負責參數提取、地名轉換、回應格式化
+- 使用 `CITY_TO_CWA_CODE` 進行地名轉換
 
-- `getForecastFromCWA()` - 從 CWA API 獲取即時天氣預報
-- `getBatchForecast()` - 批量獲取多個地區天氣資料  
-- `getCWAData()` - 查詢資料庫中的天氣資料（支援分頁和篩選）
-- `getCWAStats()` - 獲取天氣資料統計
-- `refreshCWAData()` - 刷新天氣資料
-- `healthCheck()` - 服務健康檢查
-
-**服務層 (`src/services/cwaApiService.js`)**
-
-- 專門處理與 CWA API 的通信
-- 包含 HTTP 客戶端配置、重試機制、錯誤處理
+**服務層 (`src/services/CWAApiService.js`)**
+- `getWeatherForecast(locationCode)` - 核心業務邏輯
+- 包含 HTTP 客戶端配置、錯誤處理
 - 自動加入 CWA API Key 驗證
-- 資料處理和存儲邏輯
+- 資料處理和 MongoDB 存儲
 
-**資料模型**
+**資料模型 (`src/models/mongoDB/forecastModel.js`)**
+- `forecastsSchema` - 天氣預報資料結構
+- 包含 `DatasetDescription`, `LocationsName`, `Dataid`, `Location` 等欄位
+- 自動時間戳記功能
 
-- `models/mongoDB/taiwanWeatherForecastsModel.js` - 台灣天氣預報資料結構
-- `models/ApiKey.js` - 客戶端 API Key 管理
-- `models/ApiRequest.js` - 請求日誌和分析
+**地名對照表 (`src/util/regition.js`)**
+- `CITY_TO_CWA_CODE` - 英文地名到 CWA 代碼的對照表
+- 使用小駝峰命名：`taipeiCity`, `hsinchuCounty` 等
+- 支援縣市區分避免重名問題
 
 ### 關鍵環境變數
 
 運行所需：
-
 - `MONGODB_URI` - MongoDB 資料庫連線
 - `CWA_API_KEY` - 中央氣象局 API 金鑰  
-- `JWT_SECRET` - JWT token 簽名
-- `API_KEY_SECRET` - API Key 加密
+- `CWA_API_URL` - CWA API 基礎 URL
+- `CLIENT_API_KEY` - 客戶端 API Key (簡化認證)
 - `PORT` - 服務埠號 (預設 3000)
 - `NODE_ENV` - 環境設定 (development/production)
+- `LOG_LEVEL` - 日誌等級 (預設 info)
 
 ## API Endpoints
 
-### 主要功能端點
+### 目前可用端點
 
 ```bash
-# 獲取天氣預報 (從 CWA API)
-GET /api/CWA/forecast?locationName=臺北市
-Headers: X-API-Key: your-api-key
+# 根端點 - 服務狀態
+GET /
+Response: {"message": "IWantKnowWeather API Server", "version": "1.0.0", "status": "running"}
 
-# 批量獲取多地區天氣
-POST /api/CWA/forecast/batch
-Body: { "locations": ["臺北市", "新北市"] }
-Headers: X-API-Key: your-api-key
+# 獲取天氣預報 (從 CWA API 並存入資料庫)
+GET /api/cwa/forecast?location={cityName}
+Headers: X-API-Key: default_client_key
+Example: GET /api/cwa/forecast?location=taipeiCity
 
-# 查詢資料庫天氣資料 (支援分頁)
-GET /api/CWA/data?page=1&limit=10&locationName=台北
-Headers: X-API-Key: your-api-key
-
-# 獲取天氣資料統計
-GET /api/CWA/stats
-Headers: X-API-Key: your-api-key
-
-# 刷新天氣資料
-POST /api/CWA/refresh
-Body: { "locationName": "臺北市", "forceUpdate": true }
-Headers: X-API-Key: your-api-key
-
-# 健康檢查
-GET /api/CWA/health
+# 支援的地名格式 (小駝峰)
+# 縣: yilanCounty, hsinchuCounty, miaoliCounty, changhuaCounty, nantouCounty, 
+#     yunlinCounty, chiayiCounty, pingtungCounty, taitungCounty, hualienCounty, 
+#     penghuCounty, lienchiangCounty, kinmenCounty
+# 市: taoyuanCity, keelungCity, hsinchuCity, chiayiCity, taipeiCity, 
+#     kaohsiungCity, newTaipeiCity, taichungCity, tainanCity
+# 特殊: taiwan
 ```
+
+### API 流程
+
+1. **接收請求**：Route 接收 HTTP 請求
+2. **認證檢查**：SimpleAuth 驗證 API Key
+3. **參數處理**：Controller 提取 `location` 參數
+4. **地名轉換**：`CITY_TO_CWA_CODE[location]` 轉換為 CWA 代碼
+5. **API 呼叫**：Service 向 CWA API 發送請求
+6. **資料存儲**：將回應資料存入 MongoDB
+7. **回應客戶端**：返回格式化的 JSON 回應
 
 ## Middleware 架構
 
-### 認證中介軟體 (`src/middlewares/authenticate.js`)
+### 簡化認證中介軟體 (`src/middlewares/simpleAuth.js`)
 
 **核心功能：**
-- 驗證 API Key（支援 `X-API-Key` header 和 `Authorization: Bearer` 格式）
-- 使用 bcrypt 比較 API Key hash
-- 更新 API Key 使用記錄
-- 記錄請求日誌到資料庫
-- 權限檢查功能
+- 基本 API Key 驗證
+- 支援 `X-API-Key` header 和 `Authorization: Bearer` 格式
+- 使用環境變數 `CLIENT_API_KEY` 進行比較
+- 精簡設計，專注單一職責
 
-**目前問題：**
-- 職責過多：包含驗證、日誌、API Key 生成等多種功能
-- 程式碼過於複雜：189 行，違反單一職責原則
-- 不必要的 API Key 管理功能混入 middleware
-
-### 速率限制中介軟體 (`src/middlewares/rateLimit.js`)
+### 日誌中介軟體 (`src/middlewares/logger.js`)
 
 **核心功能：**
-- 基於 API Key 的動態速率限制
-- 支援不同客戶端的個別限制設定
-- 提供詳細的錯誤訊息和重試資訊
-
-**目前問題：**
-- 過於複雜：201 行，包含多種不同的 rate limiter
-- 功能過多：包含狀態查詢、重置功能等非核心功能
-- 冗長的錯誤訊息和配置邏輯
+- 使用 Winston 進行結構化日誌
+- 記錄請求和回應資訊
+- 支援檔案和 Console 輸出
+- 包含請求時間、IP、User Agent 等資訊
 
 ## Development Guidelines
 
+### ES Modules 規範
+
+- **Import 語法**：使用 `import` 而非 `require()`
+- **Export 語法**：使用 `export default` 或 `export {}`
+- **檔案副檔名**：所有 import 路徑必須包含 `.js`
+- **模組檢查**：使用 `import.meta.url` 檢查主模組
+
 ### 配置管理
 
-- 所有新配置必須加入適當的配置檔案
-- 環境變數應有適當的預設值
-- 任何配置更改都要執行 `validateAllConfig()`
+- 所有配置統一在 `src/config/` 目錄
+- 環境變數需要適當的預設值
+- 使用 `validateAllConfig()` 驗證配置完整性
+- 配置檔案使用 ES modules 導出
 
-### 資料庫結構更改
+### 資料庫操作
 
-- Model 包含內建驗證、索引和輔助方法
-- 使用 mongoose middleware 處理計算欄位和業務邏輯
-- 考慮新索引的效能影響
+- Model 檔案使用 `export default`
+- 所有資料庫操作都在 Service 層
+- 使用 Mongoose schema 進行資料驗證
+- 考慮索引效能和資料結構
 
-### API 整合
+### API 設計原則
 
-- CWA API 配置放在 `config/CWAApis.js`
-- HTTP 客戶端邏輯放在 `services/cwaApiService.js`
-- 外部 API 呼叫必須實作重試邏輯和錯誤處理
+- RESTful 設計原則
+- 統一的錯誤回應格式
+- 包含時間戳記的回應
+- 使用適當的 HTTP 狀態碼
 
-### 安全考量
+### 程式碼品質
 
-- API Key 使用 bcrypt hash 後存儲
-- 基於個別 API Key 的速率限制配置
-- 所有請求都記錄用於審計和分析
-- 請求日誌包含 IP 位址、User Agent 和回應時間
+- **單一職責**：每個檔案/函數只負責一個功能
+- **簡潔明瞭**：避免過度複雜的邏輯
+- **錯誤處理**：適當的 try-catch 和錯誤訊息
+- **一致性**：統一的命名慣例和程式碼風格
 
-### 測試策略
+## Testing Strategy
 
-- 使用 `MONGODB_TEST_URI` 進行測試資料庫隔離
-- 可使用 Supertest 進行 HTTP 端點測試
-- 測試中需模擬外部 API 呼叫
+### 測試環境
 
-## Current Issues & Simplification Needs
+- 使用獨立的測試資料庫
+- Mock 外部 API 呼叫
+- 環境變數隔離
 
-### Middleware 複雜性問題
+### 測試覆蓋
 
-1. **authenticate.js (189行)** - 需要簡化
-   - 移除 API Key 生成功能 → 移至 `utils/apiKeyManager.js`
-   - 簡化日誌記錄 → 移至獨立 logging middleware
-   - 減少錯誤處理複雜度
+- 單元測試：Service 層邏輯
+- 整合測試：API 端點
+- 錯誤處理測試
 
-2. **rateLimit.js (201行)** - 需要簡化  
-   - 移除多種 rate limiter → 保留核心動態限制功能
-   - 移除狀態查詢功能 → 移至管理 API
-   - 簡化錯誤訊息和配置
+## Security Considerations
 
-### 建議重構方向
+- API Key 基本認證機制
+- 請求日誌記錄（不包含敏感資訊）
+- 環境變數管理敏感配置
+- CORS 和安全標頭配置
 
-```
-middlewares/
-├── authenticate.js     (簡化版 ~60行)
-├── rateLimit.js       (簡化版 ~80行)  
-└── logging.js         (新增日誌處理)
+## Performance Optimization
 
-utils/
-└── apiKeyManager.js   (新增 API Key 管理)
-```
-
-### Clean Code 原則
-
-- **單一職責**：每個 middleware 只做一件事
-- **最小必要**：只保留核心業務邏輯  
-- **關注點分離**：管理功能從 middleware 分離
-- **簡潔回應**：錯誤訊息簡潔明瞭
+- MongoDB 連線池管理
+- 適當的資料庫索引
+- HTTP 客戶端超時設定
+- 資料快取策略
 
 # important-instruction-reminders
 Do what has been asked; nothing more, nothing less.

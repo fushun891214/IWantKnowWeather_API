@@ -11,7 +11,7 @@ const cwaController = new CWAController();
  * Query params:
  *   - regition: 地區 (必填)
  */
-router.get("/forecast", cwaController.getBatchForecast.bind(cwaController));
+router.get("/forecast", cwaController.getForecast.bind(cwaController));
 
 /**
  * 查詢 forecast 集合中的預報資料

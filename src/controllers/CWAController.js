@@ -1,5 +1,4 @@
 import CWAApiService from "../services/CWAApiService.js";
-import { CITY_TO_CWA_CODE } from "../util/regition.js";
 
 /**
  * CWA API 控制器
@@ -42,15 +41,13 @@ class cwaController {
 
   /**
    * 從 CWA API 獲取預報資料並寫入 forecast 集合
-   * GET /api/cwa/batch/forecast?location={regition}
+   * GET /api/cwa/forecast?location={cityName}
    */
-  async getBatchForecast(req, res) {
+  async getForecast(req, res) {
     try {
       const { location } = req.query;
 
-      const locationCode = CITY_TO_CWA_CODE[location];
-
-      const result = await this.cwaService.getWeatherForecast(locationCode);
+      const result = await this.cwaService.getWeatherForecast(location);
 
       res.status(200).json({
         success: true,
@@ -59,8 +56,6 @@ class cwaController {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      console.error("獲取 CWA 預報資料失敗:", error);
-
       res.status(500).json({
         success: false,
         message: "獲取 CWA 預報資料失敗",
