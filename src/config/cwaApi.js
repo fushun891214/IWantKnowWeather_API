@@ -22,6 +22,6 @@ const validateCWAConfig = () => {
 };
 
 module.exports = {
-  cwaApiConfig: cwaApiConfig,
+  cwaApiConfig,
   validateCWAConfig,
 };

@@ -1,6 +1,6 @@
 // CWA (中央氣象局) API 服務
 const axios = require("axios");
-const { cwaApiConfig } = require("../config/cwaApis");
+const { cwaApiConfig } = require("../config/cwaApi");
 const forecast = require("../models/mongoDB/forecastModel");
 
 /**
