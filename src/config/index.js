@@ -1,5 +1,5 @@
 const { connectDB, disconnectDB } = require("./database");
-const { CWAApiConfig, validateCWAConfig } = require("./CWAApis");
+const { cwaApiConfig, validateCWAConfig } = require("./cwaApis");
 const { authConfig, validateAuthConfig } = require("./auth");
 
 // 總配置驗證
@@ -41,7 +41,7 @@ const appConfig = {
 module.exports = {
   appConfig,
   authConfig,
-  CWAApiConfig,
+  cwaApiConfig,
   connectDB,
   disconnectDB,
   validateAllConfig,

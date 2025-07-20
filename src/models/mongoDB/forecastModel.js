@@ -6,15 +6,14 @@ const ElementValue = new mongoose.Schema(
       type: String,
     },
   },
-  // 允許其他可能的值，包括 null
   { _id: false, strict: false }
 );
 
 const Time = new mongoose.Schema(
   {
-    StartTime: { type: String }, // CWA API 格式
-    EndTime: { type: String }, // CWA API 格式
-    ElementValue: [ElementValue], // 移除 DataTime
+    StartTime: { type: String },
+    EndTime: { type: String },
+    ElementValue: [ElementValue],
   },
   { _id: false }
 );

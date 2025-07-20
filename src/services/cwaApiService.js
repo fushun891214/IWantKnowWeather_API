@@ -1,15 +1,15 @@
 // CWA (中央氣象局) API 服務
 const axios = require("axios");
-const { CWAApiConfig } = require("../config/CWAApis");
+const { cwaApiConfig } = require("../config/cwaApis");
 const forecast = require("../models/mongoDB/forecastModel");
 
 /**
  * CWA API 服務類別
  * 負責與中央氣象局 API 的所有互動
  */
-class CWAApiService {
+class cwaApiService {
   constructor() {
-    this.config = CWAApiConfig;
+    this.config = cwaApiConfig;
     this.httpClient = this.createHttpClient();
   }
   /**
@@ -427,4 +427,4 @@ class CWAApiService {
   }
 }
 
-module.exports = CWAApiService;
+module.exports = cwaApiService;

@@ -5,7 +5,7 @@ const morgan = require("morgan");
 require("dotenv").config();
 
 const { appConfig, connectDB, validateAllConfig } = require("./config");
-const logger = require("./middlewares/logger");
+// const logger = require("./middlewares/logger");
 
 const app = express();
 
@@ -19,20 +19,20 @@ app.use(express.urlencoded({ extended: true }));
 
 // 日誌中間件
 app.use(morgan("combined"));
-app.use(logger);
+// app.use(logger);
 
 // API 路由
 app.get("/", (req, res) => {
   res.json({
     message: "IWantKnowWeather API Server",
     version: "1.0.0",
-    status: "running"
+    status: "running",
   });
 });
 
 // CWA API 路由
-const CWARoutes = require("./routes/CWARoutes");
-app.use("/api/CWA", CWARoutes);
+const cwaRoutes = require("./routes/cwaRoutes");
+app.use("/api/cwa", cwaRoutes);
 
 // 404 處理
 app.use("*", (req, res) => {
@@ -40,16 +40,6 @@ app.use("*", (req, res) => {
     error: "Endpoint not found",
     path: req.originalUrl,
     method: req.method,
-  });
-});
-
-// 全域錯誤處理
-app.use((error, req, res, next) => {
-  console.error("Global error handler:", error);
-
-  res.status(error.status || 500).json({
-    error: error.message || "Internal server error",
-    ...(appConfig.env === "development" && { stack: error.stack }),
   });
 });
 
@@ -72,7 +62,7 @@ const startServer = async () => {
 🚀 IWantKnowWeather API Server is running!
 📍 Environment: ${appConfig.env}
 🌐 Port: ${appConfig.port}
-📊 Health check: http://localhost:${appConfig.port}/health
+📊 Health check: http://localhost:${appConfig.port}
       `);
     });
 
