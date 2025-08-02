@@ -6,7 +6,12 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-import { appConfig, connectDB, validateAllConfig, disconnectDB } from "./config/index.js";
+import {
+  appConfig,
+  connectDB,
+  validateAllConfig,
+  disconnectDB,
+} from "./config/index.js";
 // import logger from "./middlewares/logger.js";
 
 const app = express();
@@ -33,7 +38,7 @@ app.get("/", (req, res) => {
 });
 
 // CWA API 路由
-import cwaRoutes from "./routes/CWARoutes.js";
+import cwaRoutes from "./routes/cwaRoutes.js";
 app.use("/api/cwa", cwaRoutes);
 
 // 404 處理
@@ -96,7 +101,8 @@ const startServer = async () => {
 
 // 啟動伺服器
 // 檢查是否為主模組 (ES Modules 版本)
-const isMainModule = import.meta.url === new URL(process.argv[1], 'file://').href;
+const isMainModule =
+  import.meta.url === new URL(process.argv[1], "file://").href;
 
 if (isMainModule) {
   startServer();
