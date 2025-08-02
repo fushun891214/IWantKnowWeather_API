@@ -1,4 +1,5 @@
 import axios from "axios";
+import pLimit from "p-limit";
 import { cwaApiConfig } from "../config/cwaApi.js";
 import forecastRegionFactoryModel from "../models/mongoDB/forecastRegionFactoryModel.js";
 import { CITY_TO_CWA_CODE } from "../util/regition.js";
@@ -91,6 +92,7 @@ class CWAApiService extends CWAApiBase {
   async getWeatherForecastAll() {
     const regionCodes = Object.values(CITY_TO_CWA_CODE);
     const regionKeys = Object.keys(CITY_TO_CWA_CODE);
+    const limit = pLimit(3);
 
     const response = await Promise.all(
       regionCodes.map((code) =>
@@ -98,22 +100,25 @@ class CWAApiService extends CWAApiBase {
       )
     );
 
-    const regionDataTasks = response.map(async (singleResponse, index) => {
-      const cwaData = singleResponse.data;
-      const locationData = cwaData.records.Locations[0];
-      const regionKey = regionKeys[index];
+    const regionDataTasks = response.map(async (singleResponse, index) =>
+      limit(async () => {
+        const cwaData = singleResponse.data;
+        const locationData = cwaData.records.Locations[0];
+        const regionKey = regionKeys[index];
 
-      const forecastData = {
-        DatasetDescription: locationData.DatasetDescription,
-        LocationsName: locationData.LocationsName,
-        Dataid: locationData.Dataid,
-        Location: locationData.Location,
-      };
+        const forecastData = {
+          DatasetDescription: locationData.DatasetDescription,
+          LocationsName: locationData.LocationsName,
+          Dataid: locationData.Dataid,
+          Location: locationData.Location,
+        };
 
-      const DynamicModel = forecastRegionFactoryModel.getRegionModel(regionKey);
+        const DynamicModel =
+          forecastRegionFactoryModel.getRegionModel(regionKey);
 
-      return DynamicModel.create(forecastData);
-    });
+        return DynamicModel.create(forecastData);
+      })
+    );
 
     await Promise.all(regionDataTasks);
   }
