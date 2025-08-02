@@ -1,6 +1,9 @@
 # CLAUDE.md
 
-預設都是用中文回答使用者問題
+1.預設都是用中文回答使用者問題
+
+2.一律都是先規劃程式實作流程，待使用者同意後，才進行下一步實作
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
@@ -8,6 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 IWantKnowWeather API 是一個基於 Express.js 和 MongoDB 的台灣天氣 API 代理服務，專門提供中央氣象局 (CWA) 天氣預報資料。本服務作為客戶端與 CWA API 之間的安全閘道，實現 API Key 驗證、資料快取和請求記錄等功能。
 
 **技術特色：**
+
 - 使用 ES Modules (而非 CommonJS)
 - 分層架構設計 (Route → Controller → Service)
 - 地名自動轉換 (英文地名 → CWA 代碼)
@@ -39,6 +43,7 @@ curl http://localhost:3000/api/cwa/forecast?location=taipeiCity \
 ### ES Modules 架構
 
 專案已完全轉換為 ES Modules，所有檔案使用：
+
 - `import` 而非 `require()`
 - `export default` 或 `export {}` 而非 `module.exports`
 - 檔案路徑必須包含 `.js` 副檔名
@@ -54,8 +59,9 @@ Client Response ← Route ← Controller ← Service ← Response
 ```
 
 **專案結構：**
+
 - **src/config/** - 集中式配置管理和驗證
-- **src/routes/** - HTTP 路由定義和中介軟體綁定  
+- **src/routes/** - HTTP 路由定義和中介軟體綁定
 - **src/middlewares/** - 請求攔截器（簡化版認證、日誌）
 - **src/controllers/** - HTTP 請求/回應處理和資料轉換
 - **src/services/** - 核心業務邏輯和第三方 API 整合
@@ -65,27 +71,32 @@ Client Response ← Route ← Controller ← Service ← Response
 ### 核心架構組件
 
 **路由系統 (`src/routes/CWARoutes.js`)**
+
 - 主要端點：`/api/cwa/*`
 - 目前活躍路由：`/api/cwa/forecast`
 - 使用 `.bind()` 確保 Controller 方法的 `this` 上下文
 
 **控制器層 (`src/controllers/CWAController.js`)**
+
 - `getForecast()` - 主要的天氣預報獲取端點
 - 負責參數提取、地名轉換、回應格式化
 - 使用 `CITY_TO_CWA_CODE` 進行地名轉換
 
 **服務層 (`src/services/CWAApiService.js`)**
+
 - `getWeatherForecast(locationCode)` - 核心業務邏輯
 - 包含 HTTP 客戶端配置、錯誤處理
 - 自動加入 CWA API Key 驗證
 - 資料處理和 MongoDB 存儲
 
 **資料模型 (`src/models/mongoDB/forecastModel.js`)**
+
 - `forecastsSchema` - 天氣預報資料結構
 - 包含 `DatasetDescription`, `LocationsName`, `Dataid`, `Location` 等欄位
 - 自動時間戳記功能
 
 **地名對照表 (`src/util/regition.js`)**
+
 - `CITY_TO_CWA_CODE` - 英文地名到 CWA 代碼的對照表
 - 使用小駝峰命名：`taipeiCity`, `hsinchuCounty` 等
 - 支援縣市區分避免重名問題
@@ -93,8 +104,9 @@ Client Response ← Route ← Controller ← Service ← Response
 ### 關鍵環境變數
 
 運行所需：
+
 - `MONGODB_URI` - MongoDB 資料庫連線
-- `CWA_API_KEY` - 中央氣象局 API 金鑰  
+- `CWA_API_KEY` - 中央氣象局 API 金鑰
 - `CWA_API_URL` - CWA API 基礎 URL
 - `CLIENT_API_KEY` - 客戶端 API Key (簡化認證)
 - `PORT` - 服務埠號 (預設 3000)
@@ -116,10 +128,10 @@ Headers: X-API-Key: default_client_key
 Example: GET /api/cwa/forecast?location=taipeiCity
 
 # 支援的地名格式 (小駝峰)
-# 縣: yilanCounty, hsinchuCounty, miaoliCounty, changhuaCounty, nantouCounty, 
-#     yunlinCounty, chiayiCounty, pingtungCounty, taitungCounty, hualienCounty, 
+# 縣: yilanCounty, hsinchuCounty, miaoliCounty, changhuaCounty, nantouCounty,
+#     yunlinCounty, chiayiCounty, pingtungCounty, taitungCounty, hualienCounty,
 #     penghuCounty, lienchiangCounty, kinmenCounty
-# 市: taoyuanCity, keelungCity, hsinchuCity, chiayiCity, taipeiCity, 
+# 市: taoyuanCity, keelungCity, hsinchuCity, chiayiCity, taipeiCity,
 #     kaohsiungCity, newTaipeiCity, taichungCity, tainanCity
 # 特殊: taiwan
 ```
@@ -139,6 +151,7 @@ Example: GET /api/cwa/forecast?location=taipeiCity
 ### 簡化認證中介軟體 (`src/middlewares/simpleAuth.js`)
 
 **核心功能：**
+
 - 基本 API Key 驗證
 - 支援 `X-API-Key` header 和 `Authorization: Bearer` 格式
 - 使用環境變數 `CLIENT_API_KEY` 進行比較
@@ -147,6 +160,7 @@ Example: GET /api/cwa/forecast?location=taipeiCity
 ### 日誌中介軟體 (`src/middlewares/logger.js`)
 
 **核心功能：**
+
 - 使用 Winston 進行結構化日誌
 - 記錄請求和回應資訊
 - 支援檔案和 Console 輸出
@@ -218,7 +232,8 @@ Example: GET /api/cwa/forecast?location=taipeiCity
 - 資料快取策略
 
 # important-instruction-reminders
+
 Do what has been asked; nothing more, nothing less.
 NEVER create files unless they're absolutely necessary for achieving your goal.
 ALWAYS prefer editing an existing file to creating a new one.
-NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
+NEVER proactively create documentation files (\*.md) or README files. Only create documentation files if explicitly requested by the User.

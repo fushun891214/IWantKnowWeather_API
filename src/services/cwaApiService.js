@@ -1,6 +1,6 @@
 import axios from "axios";
-import { cwaApiConfig } from "../config/CWAApi.js";
-import forecast from "../models/mongoDB/forecastModel.js";
+import { cwaApiConfig } from "../config/cwaApi.js";
+import forecastRegionFactoryModel from "../models/mongoDB/forecastRegionFactoryModel.js";
 import { CITY_TO_CWA_CODE } from "../util/regition.js";
 
 class CWAApiBase {
@@ -24,11 +24,11 @@ class CWAApiBase {
     // 請求攔截器
     client.interceptors.request.use(
       async (config) => {
-        console.log("📤 發送請求:", config.url);
+        console.log(`📤 發送請求:`, config.url);
         return config;
       },
       async (error) => {
-        console.error("❌ 請求攔截器錯誤:", error);
+        console.error(`❌ 請求攔截器錯誤:`, error);
         return Promise.reject(error);
       }
     );
@@ -36,12 +36,12 @@ class CWAApiBase {
     // 回應攔截器
     client.interceptors.response.use(
       async (response) => {
-        console.log("✅ CWA API 回應成功: ${response.status}");
+        console.log(`✅ CWA API 回應成功: ${response.status}`);
         return response;
       },
       async (error) => {
         console.error(
-          "❌ CWA API 錯誤: ${error.response?.status} - ${error.message}"
+          `❌ CWA API 錯誤: ${error.response?.status} - ${error.message}`
         );
         return error;
       }
@@ -86,6 +86,36 @@ class CWAApiService extends CWAApiBase {
     } catch (error) {
       throw error;
     }
+  }
+
+  async getWeatherForecastAll() {
+    const regionCodes = Object.values(CITY_TO_CWA_CODE);
+    const regionKeys = Object.keys(CITY_TO_CWA_CODE);
+
+    const response = await Promise.all(
+      regionCodes.map((code) =>
+        this.httpClient.get(`/v1/rest/datastore/${code}`)
+      )
+    );
+
+    const regionDataTasks = response.map(async (singleResponse, index) => {
+      const cwaData = singleResponse.data;
+      const locationData = cwaData.records.Locations[0];
+      const regionKey = regionKeys[index];
+
+      const forecastData = {
+        DatasetDescription: locationData.DatasetDescription,
+        LocationsName: locationData.LocationsName,
+        Dataid: locationData.Dataid,
+        Location: locationData.Location,
+      };
+
+      const DynamicModel = forecastRegionFactoryModel.getRegionModel(regionKey);
+
+      return DynamicModel.create(forecastData);
+    });
+
+    await Promise.all(regionDataTasks);
   }
 }
 

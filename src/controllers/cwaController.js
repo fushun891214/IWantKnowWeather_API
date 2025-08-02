@@ -1,4 +1,4 @@
-import CWAApiService from "../services/CWAApiService.js";
+import CWAApiService from "../services/cwaApiService.js";
 
 class cwaControllerBase {
   constructor() {
@@ -27,6 +27,25 @@ class cwaController extends cwaControllerBase {
       res.status(500).json({
         success: false,
         message: "獲取 CWA 預報資料失敗",
+        error: error.message,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+
+  async getForecastAll(req, res) {
+    try {
+      const result = await this.cwaService.getWeatherForecastAll();
+
+      res.status(200).json({
+        success: true,
+        status: 0,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        status: 1,
         error: error.message,
         timestamp: new Date().toISOString(),
       });
