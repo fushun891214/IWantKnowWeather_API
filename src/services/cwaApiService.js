@@ -98,7 +98,8 @@ class CWAApiService extends CWAApiBase {
       )
     );
 
-    const regionDataTasks = response.map(async (singleResponse, index) => {
+    for (let index = 0; index < response.length; index++) {
+      const singleResponse = response[index];
       const cwaData = singleResponse.data;
       const locationData = cwaData.records.Locations[0];
       const regionKey = regionKeys[index];
@@ -111,11 +112,10 @@ class CWAApiService extends CWAApiBase {
       };
 
       const DynamicModel = forecastRegionFactoryModel.getRegionModel(regionKey);
+      await DynamicModel.create(forecastData);
 
-      return DynamicModel.create(forecastData);
-    });
-
-    await Promise.all(regionDataTasks);
+      console.log(`✅ ${regionKey} 處理完成 (${index + 1}/${response.length})`);
+    }
   }
 }
 
