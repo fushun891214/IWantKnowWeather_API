@@ -1,5 +1,5 @@
 import { connectDB, disconnectDB } from "./database.js";
-import { cwaApiConfig, validateCWAConfig } from "./CWAApi.js";
+import { cwaApiConfig, validateCWAConfig } from "./cwaApi.js";
 import { authConfig, validateAuthConfig } from "./auth.js";
 
 // 總配置驗證
@@ -27,13 +27,13 @@ const validateAllConfig = () => {
 // 應用配置
 const appConfig = {
   port: parseInt(process.env.PORT) || 3000,
-  env: process.env.NODE_ENV || 'development',
+  env: process.env.NODE_ENV || "development",
   cors: {
     origin: process.env.CORS_ORIGIN,
     credentials: true,
   },
   logging: {
-    level: process.env.LOG_LEVEL || 'info',
+    level: process.env.LOG_LEVEL || "info",
     file: process.env.LOG_FILE || null,
   },
 };
