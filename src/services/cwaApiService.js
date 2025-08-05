@@ -116,6 +116,25 @@ class CWAApiService extends CWAApiBase {
 
       console.log(`✅ ${regionKey} 處理完成 (${index + 1}/${response.length})`);
     }
+
+    // 非同步的寫法，但耗費記憶體，所以暫不採用
+    // const regitionDataTasks = response.map(async (singleResponse, index) => {
+    //   const cwaData = singleResponse.data;
+    //   const locationData = cwaData.records.Locations[0];
+    //   const regionKey = regionKeys[index];
+
+    //   const forecastData = {
+    //     DatasetDescription: locationData.DatasetDescription,
+    //     LocationsName: locationData.LocationsName,
+    //     Dataid: locationData.Dataid,
+    //     Location: locationData.Location,
+    //   };
+
+    //   const DynamicModel = forecastRegionFactoryModel.getRegionModel(regionKey);
+    //   return DynamicModel.create(forecastData);
+    // });
+
+    // await Promise.all(regitionDataTasks);
   }
 }
 
