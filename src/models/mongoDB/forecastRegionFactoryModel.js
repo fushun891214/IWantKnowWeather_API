@@ -9,9 +9,7 @@ class forecastRegionFactoryModel {
    * @returns {mongoose.Model}
    */
   static createRegionModel(regionKey) {
-    const collectionName = `forecasts${
-      regionKey.charAt(0).toUpperCase() + regionKey.slice(1)
-    }`;
+    const collectionName = `forecasts/${regionKey}`;
 
     // 檢查是否已存在
     if (mongoose.models[collectionName]) {

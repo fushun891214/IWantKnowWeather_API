@@ -41,6 +41,10 @@ app.get("/", (req, res) => {
 import cwaRoutes from "./routes/cwaRoutes.js";
 app.use("/api/cwa", cwaRoutes);
 
+// DATA API 路由
+import dataRoutes from "./routes/dataRoutes.js";
+app.use("/api/data", dataRoutes);
+
 // 404 處理
 app.use("*", (req, res) => {
   res.status(404).json({

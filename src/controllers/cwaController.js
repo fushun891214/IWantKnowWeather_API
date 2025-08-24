@@ -1,4 +1,5 @@
 import CWAApiService from "../services/cwaApiService.js";
+import { API_STATUS } from "../util/apiStatus.js";
 
 class cwaControllerBase {
   constructor() {
@@ -19,14 +20,14 @@ class cwaController extends cwaControllerBase {
 
       res.status(200).json({
         success: true,
-        message: "CWA 預報資料獲取並儲存成功",
+        status: API_STATUS.success,
         data: result,
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: "獲取 CWA 預報資料失敗",
+        status: API_STATUS.error,
         error: error.message,
         timestamp: new Date().toISOString(),
       });
@@ -39,13 +40,14 @@ class cwaController extends cwaControllerBase {
 
       res.status(200).json({
         success: true,
-        status: 0,
+        status: API_STATUS.success,
+        data: result,
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        status: 1,
+        status: API_STATUS.error,
         error: error.message,
         timestamp: new Date().toISOString(),
       });
