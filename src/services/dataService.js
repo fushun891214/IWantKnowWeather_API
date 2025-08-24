@@ -5,7 +5,7 @@ class dataService {
   /**
    * 從資料庫查詢天氣預報資料
    * @param {string} city - 城市名稱 (必填)
-   * @param {string} district - 區域名稱 (選填)
+   * @param {string} district - 區域名稱 (必填)
    */
   async getForecastFromDB(city, district) {
     try {
@@ -17,34 +17,45 @@ class dataService {
       // 透過 forecastRegionFactoryModel 取得對應的 Model
       const RegionModel = forecastRegionFactoryModel.getRegionModel(city);
 
-      // 查詢最新的預報資料（按建立時間排序）
-      let results = await RegionModel.find({}).sort({ createdAt: -1 }).limit(1);
+      // 使用 aggregate 查詢最新的預報資料
+      const pipeline = [
+        {
+          $sort: {
+            createdAt: -1,
+          },
+        },
+        {
+          $limit: 1,
+        },
+        {
+          $unwind: {
+            path: "$Location",
+          },
+        },
+        {
+          $match: {
+            "Location.LocationName": district,
+          },
+        },
+        {
+          $project: {
+            Location: 1,
+          },
+        },
+      ];
+
+      const results = await RegionModel.aggregate(pipeline);
+
+      console.log(results);
 
       if (!results || results.length === 0) {
-        throw new Error(`找不到 ${city} 的預報資料`);
+        const errorMessage = district
+          ? `在 ${city} 中找不到包含 "${district}" 的預報資料`
+          : `找不到 ${city} 的預報資料`;
+        throw new Error(errorMessage);
       }
 
-      let forecastData = results[0];
-
-      // 如果指定了 district，進一步篩選 Location 資料
-      if (district && forecastData.Location) {
-        const filteredLocations = forecastData.Location.filter(
-          (location) =>
-            location.LocationName && location.LocationName.includes(district)
-        );
-
-        if (filteredLocations.length === 0) {
-          throw new Error(`在 ${city} 中找不到 ${district} 的資料`);
-        }
-
-        // 複製資料並只返回符合的 Location
-        forecastData = {
-          ...forecastData.toObject(),
-          Location: filteredLocations,
-        };
-      }
-
-      return forecastData;
+      return results[0];
     } catch (error) {
       throw new Error(`查詢資料庫失敗: ${error.message}`);
     }

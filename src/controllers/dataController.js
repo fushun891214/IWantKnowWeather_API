@@ -17,11 +17,11 @@ class dataController extends controllerBase {
       const { city, district } = req.query;
 
       // 驗證必填參數
-      if (!city) {
+      if (!city || !district) {
         return res.status(400).json({
           success: false,
           status: API_STATUS.error,
-          error: "city 參數為必填",
+          error: "city 及 district 參數為必填",
           timestamp: new Date().toISOString(),
         });
       }
